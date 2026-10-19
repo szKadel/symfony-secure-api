@@ -7,3 +7,25 @@ services:
       APP_ENV: dev
       APP_DEBUG: "1"
       APP_SECRET: "local-dev-only-change-me"
+      DATABASE_URL: "postgresql://app:app_dev_password@db:5432/secure_api?serverVersion=16&charset=utf8"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: secure_api
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app_dev_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d secure_api"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
