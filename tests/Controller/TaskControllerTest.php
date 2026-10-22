@@ -63,4 +63,43 @@ final class TaskControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(400);
     }
+
+
+    public function testGetTasksReturnsArray(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/api/tasks');
+
+        self::assertResponseIsSuccessful();
+
+        $data = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        self::assertIsArray($data);
+        self::assertTrue(array_is_list($data));
+    }
+
+    public function testGetNonExistingTaskReturns404(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/api/tasks/999999');
+
+        self::assertResponseStatusCodeSame(404);
+
+        $data = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        self::assertSame('Task not found', $data['error']);
+    }
+
 }
