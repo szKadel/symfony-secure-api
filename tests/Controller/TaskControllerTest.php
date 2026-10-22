@@ -2,7 +2,10 @@
 
 namespace App\Tests\Controller;
 
+use App\Application\Task\DeleteTask\DeleteTaskHandler;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 final class TaskControllerTest extends WebTestCase
 {
@@ -201,5 +204,55 @@ final class TaskControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+
+    public function testDeleteTaskReturns204AndRemovesTask(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/api/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"title":"Task to delete in test"}'
+        );
+
+        self::assertResponseStatusCodeSame(201);
+
+        $task = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        $client->request('DELETE', '/api/tasks/' . $task['id']);
+
+        self::assertResponseStatusCodeSame(204);
+        self::assertSame('', $client->getResponse()->getContent());
+
+        $client->request('GET', '/api/tasks/' . $task['id']);
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testDeleteNonExistingTaskReturns404(): void
+    {
+        $client = static::createClient();
+
+        $client->request('DELETE', '/api/tasks/999999');
+
+        self::assertResponseStatusCodeSame(404);
+
+        $data = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        self::assertSame('Task not found', $data['error']);
+    }
 
 }

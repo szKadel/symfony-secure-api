@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Application\Task\CreateTask\CreateTaskCommand;
 use App\Application\Task\CreateTask\CreateTaskHandler;
 use App\Application\Task\CreateTask\Validation\CreateTaskRequestValidator;
+use App\Application\Task\DeleteTask\DeleteTaskHandler;
 use App\Application\Task\Dto\TaskResponse;
 use App\Application\Task\GetTask\GetTaskHandler;
 use App\Application\Task\GetTasks\GetTasksHandler;
@@ -80,6 +81,19 @@ final class TaskController extends AbstractController
         return $this->json(
             TaskResponse::fromEntity($task)->toArray()
         );
+    }
+
+    #[Route(
+        '/api/tasks/{id}',
+        name: 'api_tasks_delete',
+        requirements: ['id' => '\d+'],
+        methods: ['DELETE']
+    )]
+    public function delete(int $id, DeleteTaskHandler $handler): Response
+    {
+        $handler($id);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
 }
