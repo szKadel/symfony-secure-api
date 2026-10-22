@@ -15,7 +15,8 @@
     "doctrine/orm": "^3.7",
     "doctrine/doctrine-bundle": "^2.19",
     "doctrine/doctrine-migrations-bundle": "^3.7",
-    "symfony/flex": "^2.11"
+    "symfony/flex": "^2.11",
+    "symfony/validator": "^7.4"
   },
   "require-dev": {
     "phpunit/phpunit": "^11.5",

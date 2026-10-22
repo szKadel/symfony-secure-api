@@ -8,6 +8,7 @@ services:
       APP_DEBUG: "1"
       APP_SECRET: "local-dev-only-change-me"
       DATABASE_URL: "postgresql://app:app_dev_password@db:5432/secure_api?serverVersion=16&charset=utf8"
+      DEFAULT_URI: "http://localhost:8081"
     depends_on:
       db:
         condition: service_healthy
