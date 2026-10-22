@@ -8,6 +8,8 @@ use App\Application\Task\CreateTask\Validation\CreateTaskRequestValidator;
 use App\Application\Task\Dto\TaskResponse;
 use App\Application\Task\GetTask\GetTaskHandler;
 use App\Application\Task\GetTasks\GetTasksHandler;
+use App\Application\Task\UpdateTask\UpdateTaskHandler;
+use App\Application\Task\UpdateTask\Validation\UpdateTaskRequestValidator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,4 +59,27 @@ final class TaskController extends AbstractController
             Response::HTTP_CREATED
         );
     }
+
+
+    #[Route(
+        '/api/tasks/{id}',
+        name: 'api_tasks_update',
+        requirements: ['id' => '\d+'],
+        methods: ['PATCH']
+    )]
+    public function update(
+        int $id,
+        Request $request,
+        UpdateTaskRequestValidator $validator,
+        UpdateTaskHandler $handler,
+    ): JsonResponse {
+        $command = $validator->validate($request, $id);
+
+        $task = $handler($command);
+
+        return $this->json(
+            TaskResponse::fromEntity($task)->toArray()
+        );
+    }
+
 }

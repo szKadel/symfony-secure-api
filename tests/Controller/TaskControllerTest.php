@@ -102,4 +102,104 @@ final class TaskControllerTest extends WebTestCase
         self::assertSame('Task not found', $data['error']);
     }
 
+
+    public function testPatchTaskUpdatesCompletionStatus(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/api/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode([
+                'title' => 'Task for PATCH test',
+                'description' => 'Original description',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(201);
+
+        $createdTask = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        $client->request(
+            'PATCH',
+            '/api/tasks/' . $createdTask['id'],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"isCompleted":true}'
+        );
+
+        self::assertResponseStatusCodeSame(200);
+
+        $updatedTask = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        self::assertTrue($updatedTask['isCompleted']);
+        self::assertSame('Task for PATCH test', $updatedTask['title']);
+        self::assertSame('Original description', $updatedTask['description']);
+    }
+
+    public function testPatchTaskRejectsEmptyTitle(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/api/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"title":"Task for validation test"}'
+        );
+
+        self::assertResponseStatusCodeSame(201);
+
+        $createdTask = json_decode(
+            $client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        $client->request(
+            'PATCH',
+            '/api/tasks/' . $createdTask['id'],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"title":""}'
+        );
+
+        self::assertResponseStatusCodeSame(422);
+    }
+
+    public function testPatchNonExistingTaskReturns404(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'PATCH',
+            '/api/tasks/999999',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{"isCompleted":true}'
+        );
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+
 }
